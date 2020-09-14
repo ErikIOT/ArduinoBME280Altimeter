@@ -1,0 +1,117 @@
+
+#include "U8glib.h"
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+U8GLIB_SSD1306_128X32 u8g(U8G_I2C_OPT_NONE); // Just for 0.91â€(128*32)
+
+Adafruit_BME280 bme; // I2C
+
+unsigned long delayTime;
+
+double baseline; // baseline pressure
+double maxval = -9999;
+
+void setup() {
+    Serial.begin(9600);
+    while(!Serial);    // time to get serial running
+    Serial.println(F("BME280 test"));
+
+//////////  START DISPLAY OPS ////////////////
+    // assign default color value
+  if ( u8g.getMode() == U8G_MODE_R3G3B2 ) {
+    u8g.setColorIndex(255);     // white
+  }
+  else if ( u8g.getMode() == U8G_MODE_GRAY2BIT ) {
+    u8g.setColorIndex(3);         // max intensity
+  }
+  else if ( u8g.getMode() == U8G_MODE_BW ) {
+    u8g.setColorIndex(1);         // pixel on
+  }
+  else if ( u8g.getMode() == U8G_MODE_HICOLOR ) {
+    u8g.setHiColorByRGB(255,255,255);
+  }
+
+u8g.firstPage();  
+  do {
+  u8g.setFont(u8g_font_unifont);
+  u8g.setPrintPos(0, 10);
+  u8g.print("    LAUNCH");
+  u8g.setPrintPos(0, 30);
+  u8g.print("  INITIATING!");
+  }while( u8g.nextPage() );
+//////////  END DISPLAY OPS ////////////////
+    unsigned status;
+    
+    // default settings
+    status = bme.begin(0x76);  
+ 
+    Serial.println("-- Default Test --");
+    delayTime = 1000;
+
+    Serial.println();
+
+    delay(5000);
+
+    baseline = (bme.readAltitude(SEALEVELPRESSURE_HPA));
+
+  delay(250);
+}
+
+
+void loop() { 
+//    printValues();
+//    delay(delayTime);
+
+double a,P;
+
+P = (bme.readPressure() / 100.0F);
+
+  // Show the relative altitude difference between
+  // the new reading and the baseline reading:
+
+  a = (bme.readAltitude(SEALEVELPRESSURE_HPA) - baseline);
+  
+  Serial.print("relative altitude: ");
+  if (a >= 0.0) Serial.print(" "); // add a space for positive numbers
+  Serial.print(a,1);
+  Serial.print(" meters, ");
+  if (a >= 0.0) Serial.print(" "); // add a space for positive numbers
+  Serial.print(a*3.28084,0);
+  Serial.println(" feet");
+  delay(250);
+
+if (a > maxval) {
+  maxval = a;
+}
+
+
+  u8g.firstPage();  
+  do {
+
+    if (maxval < 2){
+  u8g.setFont(u8g_font_unifont);
+  u8g.setPrintPos(0, 10);
+  u8g.print("    AWAITING");
+  u8g.setPrintPos(0, 30);
+  u8g.print("     APOGEE");
+}else{
+    u8g.setFont(u8g_font_unifont);
+  u8g.setPrintPos(0, 10); 
+  u8g.print("Max Altitude: ");
+  u8g.setPrintPos(0, 20); 
+  u8g.print(maxval,1);
+  u8g.print(" m");
+  u8g.setPrintPos(0, 30);
+  u8g.print(maxval*3.28084,0); 
+  u8g.print(" ft");
+  } }while( u8g.nextPage() );
+  
+  // rebuild the picture after some delay
+  delay(50);
+  
+}
