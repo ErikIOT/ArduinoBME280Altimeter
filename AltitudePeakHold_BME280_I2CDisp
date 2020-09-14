@@ -1,4 +1,14 @@
 
+Arduino:
+https://www.amazon.ca/gp/product/B078HM2LC3/
+
+Pressure Sensor:
+https://www.amazon.ca/gp/product/B07KYJNFMD
+
+OLED Display:
+https://www.amazon.ca/gp/product/B085NHJYBV
+
+
 #include "U8glib.h"
 #include <Wire.h>
 #include <SPI.h>
@@ -7,7 +17,7 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-U8GLIB_SSD1306_128X32 u8g(U8G_I2C_OPT_NONE); // Just for 0.91â€(128*32)
+U8GLIB_SSD1306_128X32 u8g(U8G_I2C_OPT_NONE); // Just for 0.91"(128*32)
 
 Adafruit_BME280 bme; // I2C
 
